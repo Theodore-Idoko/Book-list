@@ -56,6 +56,53 @@ class UI {
   }
 }
 
+// Local Storage Class
+class Store {
+  static getBooks() { // method for getting the book from local storage
+    let books;
+    if(localStorage.getItem('books') === null){
+      books = [];
+    }else {
+      books = JSON.parse(localStorage.getItem('books'));
+    }
+    return books;
+  }
+
+  static displayBooks() { //displaying the book in the ui
+    const books = Store.getBooks();
+
+    books.forEach(function(book){
+      const ui = new UI; //instantiating the ui
+
+      // Add book to UI
+      ui. addBookToList(book);
+    })
+  }
+
+  static addBook(book) { // adding the book to the local storage
+    const books = Store.getBooks(); // no need for instantiating getbooks cos it's a static object
+
+    books.push(book);
+
+    localStorage.setItem('books', JSON.stringify(books));
+  }
+
+  static removeBook(isbn) {
+    const books = Store.getBooks()
+
+    books.forEach(function(book,index){
+      if(book.isbn === isbn){
+        books.splice(index,1);
+      }
+    })
+    
+    localStorage.setItem('books', JSON.stringify(books));
+  }
+}
+
+//DOM Load Event
+document.addEventListener('DOMContentLoaded', Store.displayBooks);
+
 
 //Event Listeners for add book
 document.getElementById('book-form').addEventListener('submit',function(e){
@@ -79,6 +126,9 @@ document.getElementById('book-form').addEventListener('submit',function(e){
     // Add book to list
     ui.addBookToList(book);
 
+    // Add to LS
+    Store.addBook(book);
+
     // Show success
     ui.showAlert('Book Added', 'success');
 
@@ -98,6 +148,9 @@ document.getElementById('book-list').addEventListener('click', function(e){
 
   //Delete book
   ui.deleteBook(e.target);
+
+  // Remove from LS
+  Store.removeBook(e.target.parentElement.previousElementSibling.textContent); // parent of the a tag is the td and the previousElementSibling.textContent is the isbn number which is what we are targeting 
 
   // Show message
   ui.showAlert('Book Removed!', 'success');
